@@ -29,9 +29,8 @@ export default function UploadBox({ onAddImages }) {
     <div className="grid gap-4">
       <div
         onClick={() => !busy && inputRef.current?.click()}
-        className={`border-2 border-dashed border-[#242A34] rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition hover:border-[#3F82FF] hover:bg-white/5 ${
-          busy ? "opacity-50 cursor-not-allowed" : ""
-        }`}
+        className={`border-2 border-dashed border-[#242A34] rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition hover:border-[#3F82FF] hover:bg-white/5 ${busy ? "opacity-50 cursor-not-allowed" : ""
+          }`}
       >
         <div className="w-12 h-12 bg-[#1B1F27] rounded-full flex items-center justify-center">
           <Upload className="w-6 h-6 text-[#3F82FF]" />
@@ -63,7 +62,7 @@ export default function UploadBox({ onAddImages }) {
       )}
 
       <p className="text-xs text-white/30 italic">
-        Uploaded images are stored in the project's local uploads folder.
+        Note: localStorage has storage limits (~6–70MB).
       </p>
     </div>
   );

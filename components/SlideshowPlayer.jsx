@@ -19,6 +19,7 @@ export default function SlideshowPlayer({ images, settings }) {
 
   const [index, setIndex] = useState(0);
   const [fadeKey, setFadeKey] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     setIndex(0);
@@ -35,6 +36,16 @@ export default function SlideshowPlayer({ images, settings }) {
     );
     return () => clearInterval(t);
   }, [playlist.length, settings.intervalMs]);
+
+  useEffect(() => {
+    const syncFullscreen = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    syncFullscreen();
+    document.addEventListener("fullscreenchange", syncFullscreen);
+    return () => document.removeEventListener("fullscreenchange", syncFullscreen);
+  }, []);
 
   const current = playlist[index];
 
@@ -88,15 +99,17 @@ export default function SlideshowPlayer({ images, settings }) {
         </div>
       )}
 
-      <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
-        <div
-          key={fadeKey}
-          className="h-full bg-[#3F82FF] shadow-[0_0_10px_#3F82FF]"
-          style={{
-            animation: `slideshowProgress ${settings.intervalMs}ms linear forwards`,
-          }}
-        />
-      </div>
+      {!isFullscreen && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
+          <div
+            key={fadeKey}
+            className="h-full bg-[#3F82FF] shadow-[0_0_10px_#3F82FF]"
+            style={{
+              animation: `slideshowProgress ${settings.intervalMs}ms linear forwards`,
+            }}
+          />
+        </div>
+      )}
 
     </div>
   );

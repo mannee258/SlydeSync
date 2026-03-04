@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { loadImages, loadSettings } from "@/utils/storage";
 import SlideshowPlayer from "@/components/SlideshowPlayer";
-import { ArrowLeft, Maximize2 } from "lucide-react";
+import { Maximize2 } from "lucide-react";
 
 export default function DisplayPage() {
   const [images, setImages] = useState([]);
   const [settings, setSettings] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const hideTimerRef = useRef(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const refreshData = async () => {
@@ -23,33 +26,60 @@ export default function DisplayPage() {
     return () => window.removeEventListener("focus", refreshData);
   }, []);
 
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    onFullscreenChange();
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen?.();
+      return;
+    }
+    await document.documentElement.requestFullscreen?.();
+  };
+
+  useEffect(() => {
+    const hideDelayMs = 2000;
+
+    const showControlsTemporarily = () => {
+      setControlsVisible(true);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = setTimeout(() => {
+        setControlsVisible(false);
+      }, hideDelayMs);
+    };
+
+    showControlsTemporarily();
+    window.addEventListener("mousemove", showControlsTemporarily);
+
+    return () => {
+      window.removeEventListener("mousemove", showControlsTemporarily);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, []);
+
   if (!mounted || !settings) return null;
 
   return (
     <div className="fixed inset-0 bg-black z-50">
-      <div className="absolute top-6 left-6 z-[60] opacity-0 hover:opacity-100 transition duration-300">
-        <a
-          href="/admin"
-          className="flex items-center gap-2 bg-black/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-xl text-sm font-medium hover:bg-black/60 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Admin
-        </a>
-      </div>
-
-      <div className="absolute top-6 right-6 z-[60] opacity-0 hover:opacity-100 transition duration-300">
-        <button
-          onClick={() => document.documentElement.requestFullscreen()}
-          className="p-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl hover:bg-black/60 transition"
-          title="Fullscreen"
-        >
-          <Maximize2 className="w-4 h-4" />
-        </button>
-      </div>
-
       <SlideshowPlayer images={images} settings={settings} />
 
-      <div className="absolute bottom-4 right-4 text-[10px] text-white/10 pointer-events-none uppercase tracking-[0.2em] font-medium text-white">
+      <button
+        onClick={toggleFullscreen}
+        className={`absolute bottom-4 right-4 z-60 p-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl hover:bg-black/60 transition duration-300 ${controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+        aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+      >
+        <Maximize2 className="w-4 h-4" />
+      </button>
+
+      <div className="absolute bottom-4 right-16 text-[10px] text-white/10 pointer-events-none uppercase tracking-[0.2em] font-medium">
         SlideSync Display Mode
       </div>
     </div>

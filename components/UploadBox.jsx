@@ -40,7 +40,7 @@ export default function UploadBox({ onAddImages }) {
             Click to upload images
           </p>
           <p className="text-xs text-white/40">
-            PNG, JPG or WEBP (Max 15MB total per upload)
+            PNG, JPG or WEBP (Max 50MB total per upload)
           </p>
         </div>
         <input

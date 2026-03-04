@@ -77,7 +77,7 @@ export default function AdminPage() {
               Storage
             </span>
             <span className="text-sm font-semibold mt-0.5">
-              {stats.approxSizeMb} MB / 15 MB
+              {stats.approxSizeMb} MB / 50 MB
             </span>
           </div>
           <div className="w-px h-full self-stretch bg-white/10" />

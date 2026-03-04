@@ -44,7 +44,7 @@ export async function POST(request) {
   const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
   if (totalBytes > UPLOAD_LIMIT_BYTES) {
     return Response.json(
-      { error: "Upload limit exceeded. Max total upload is 15MB." },
+      { error: "Upload limit exceeded. Max total upload is 50MB." },
       { status: 413 },
     );
   }

@@ -1,6 +1,8 @@
 const IMAGES_KEY = "mvp_slideshow_images";
 const SETTINGS_KEY = "mvp_slideshow_settings";
-export const UPLOAD_LIMIT_BYTES = 15 * 1024 * 1024;
+const IMAGES_UPDATED_KEY = "mvp_slideshow_images_updated_at";
+const UPDATES_CHANNEL = "slydesync_updates";
+export const UPLOAD_LIMIT_BYTES = 50 * 1024 * 1024;
 
 export const defaultSettings = {
   intervalMs: 3000,
@@ -36,8 +38,15 @@ export async function saveImages(images) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ images }),
     });
+    if (typeof BroadcastChannel !== "undefined") {
+      const channel = new BroadcastChannel(UPDATES_CHANNEL);
+      channel.postMessage({ type: "images-updated", at: Date.now() });
+      channel.close();
+    }
+    localStorage.setItem(IMAGES_UPDATED_KEY, String(Date.now()));
   } catch {
     localStorage.setItem(IMAGES_KEY, JSON.stringify(images));
+    localStorage.setItem(IMAGES_UPDATED_KEY, String(Date.now()));
   }
 }
 

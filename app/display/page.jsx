@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { loadImages, loadSettings } from "@/utils/storage";
 import SlideshowPlayer from "@/components/SlideshowPlayer";
 import { Maximize2 } from "lucide-react";
@@ -12,19 +12,50 @@ export default function DisplayPage() {
   const [controlsVisible, setControlsVisible] = useState(true);
   const hideTimerRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const refreshData = useCallback(async () => {
+    setImages(await loadImages());
+    setSettings(loadSettings());
+  }, []);
 
   useEffect(() => {
-    const refreshData = async () => {
-      setImages(await loadImages());
-      setSettings(loadSettings());
-    };
-
     refreshData();
     setMounted(true);
 
     window.addEventListener("focus", refreshData);
     return () => window.removeEventListener("focus", refreshData);
-  }, []);
+  }, [refreshData]);
+
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === "mvp_slideshow_images_updated_at") {
+        refreshData();
+      }
+    };
+
+    let channel = null;
+    const onChannelMessage = (event) => {
+      if (event?.data?.type === "images-updated") {
+        refreshData();
+      }
+    };
+
+    if (typeof BroadcastChannel !== "undefined") {
+      channel = new BroadcastChannel("slydesync_updates");
+      channel.addEventListener("message", onChannelMessage);
+    }
+
+    const pollId = setInterval(refreshData, 1500);
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      clearInterval(pollId);
+      window.removeEventListener("storage", onStorage);
+      if (channel) {
+        channel.removeEventListener("message", onChannelMessage);
+        channel.close();
+      }
+    };
+  }, [refreshData]);
 
   useEffect(() => {
     const onFullscreenChange = () => {

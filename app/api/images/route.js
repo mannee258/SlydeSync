@@ -15,7 +15,22 @@ async function readManifest() {
   try {
     const raw = await fs.readFile(MANIFEST_PATH, "utf8");
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+
+    const validated = await Promise.all(
+      parsed.map(async (img) => {
+        const url = img?.url;
+        if (!isUploadUrl(url)) return img;
+        try {
+          await fs.access(localUploadPathFromUrl(url));
+          return img;
+        } catch {
+          return null;
+        }
+      }),
+    );
+
+    return validated.filter(Boolean);
   } catch {
     return [];
   }
@@ -36,6 +51,7 @@ function localUploadPathFromUrl(url) {
 
 export async function GET() {
   const images = await readManifest();
+  await writeManifest(images);
   return Response.json({ images });
 }
 

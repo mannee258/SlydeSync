@@ -17,22 +17,36 @@ export default function AdminPage() {
   const [images, setImages] = useState([]);
   const [settings, setSettings] = useState(defaultSettings);
   const [mounted, setMounted] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    loadImages().then(setImages);
-    setSettings(loadSettings());
-    setMounted(true);
+    let cancelled = false;
+
+    async function init() {
+      const loadedImages = await loadImages();
+      const loadedSettings = loadSettings();
+      if (cancelled) return;
+      setImages(loadedImages);
+      setSettings(loadedSettings);
+      setMounted(true);
+      setReady(true);
+    }
+
+    init();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
-    if (mounted) {
+    if (mounted && ready) {
       saveImages(images);
     }
-  }, [images, mounted]);
+  }, [images, mounted, ready]);
 
   useEffect(() => {
-    if (mounted) saveSettings(settings);
-  }, [settings, mounted]);
+    if (mounted && ready) saveSettings(settings);
+  }, [settings, mounted, ready]);
 
   const stats = useMemo(() => {
     const bytes = images.reduce(

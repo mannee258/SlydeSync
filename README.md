@@ -164,6 +164,8 @@ Appends metadata into data/images.json
 
 Returns only the newly uploaded items (not the entire queue)
 
+---
+
 ##Local development
 1) Install dependencies
 npm install
@@ -180,6 +182,8 @@ http://localhost:3000/display
 npm run build
 npm run start
 
+---
+
 ##Deployment
 
 This repo is deployed on Vercel:
@@ -188,6 +192,8 @@ https://slyde-sync.vercel.app
 
 Important note about persistence on Vercel:
 Vercel serverless/edge environments may not guarantee durable filesystem writes across deployments/instances. Since SlydeSync currently writes uploads and the manifest to the local filesystem (public/uploads + data/images.json), production-grade deployments usually require external storage (e.g., S3, Cloudinary, Supabase Storage) and a real database.
+
+---
 
 ##Known limitations
 

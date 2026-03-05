@@ -16,12 +16,12 @@
 - [Features](#features)
 - [Tech stack](#tech-stack)
 - [How it works](#how-it-works)
-- [Screenshots](#screenshots)
 - [Project structure](#project-structure)
 - [API](#api)
 - [Local development](#local-development)
 - [Deployment](#deployment)
 - [Known limitations](#known-limitations)
+
 
 
 ---
@@ -142,20 +142,25 @@ Also validates that previously uploaded `/uploads/*` files still exist. :content
     }
   ]
 }
-POST /api/images
+```
 
+### `POST /api/images`
 Replaces the manifest with a new queue.
 Performs best-effort cleanup for removed items that were stored under /uploads/.
 
-Body
+**Body**
 
+```json
 { "images": [/* same shape as above */] }
+```
 
-Response
+**Response**
 
+```json
 { "ok": true }
-POST /api/images/upload
+```
 
+### `POST /api/images/upload`
 Uploads files (multipart/form-data) under key files.
 
 Writes files to public/uploads/
@@ -166,7 +171,8 @@ Returns only the newly uploaded items (not the entire queue)
 
 ---
 
-##Local development
+## Local development
+
 1) Install dependencies
 npm install
 2) Run dev server
@@ -184,7 +190,7 @@ npm run start
 
 ---
 
-##Deployment
+## Deployment
 
 This repo is deployed on Vercel:
 
@@ -195,7 +201,7 @@ Vercel serverless/edge environments may not guarantee durable filesystem writes 
 
 ---
 
-##Known limitations
+## Known limitations
 
 Upload size mismatch
 
@@ -233,3 +239,4 @@ Remote pairing (Admin controls a Display running on another device)
 Transition effects (slide, zoom, crossfade), per-slide duration, per-slide captions
 
 “Preview mode” in Admin
+

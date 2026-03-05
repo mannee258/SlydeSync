@@ -189,11 +189,10 @@ export default function FolderPicker({
                 /* ── Normal folder row ── */
                 <button
                   onClick={() => onSelectFolder(folder)}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition text-sm ${
-                    isActive
-                      ? "bg-[#3F82FF] text-white"
-                      : "text-white/60 hover:text-white hover:bg-white/5"
-                  }`}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left transition text-sm ${isActive
+                    ? "bg-[#3F82FF] text-white"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                    }`}
                 >
                   <Folder className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-white/30"}`} />
                   <span className="flex-1 truncate font-medium">{displayName(folder)}</span>
@@ -207,11 +206,10 @@ export default function FolderPicker({
                         onClick={(e) => startEdit(folder, e)}
                         onKeyDown={(e) => e.key === "Enter" && startEdit(folder, e)}
                         title="Rename folder"
-                        className={`p-1 rounded-md transition ${
-                          isActive
-                            ? "hover:bg-white/20 text-white/70 hover:text-white"
-                            : "hover:bg-white/10 text-white/40 hover:text-white"
-                        }`}
+                        className={`p-1 rounded-md transition ${isActive
+                          ? "hover:bg-white/20 text-white/70 hover:text-white"
+                          : "hover:bg-white/10 text-white/40 hover:text-white"
+                          }`}
                       >
                         <Pencil className="w-3 h-3" />
                       </span>
@@ -221,11 +219,10 @@ export default function FolderPicker({
                         onClick={(e) => handleDelete(folder, e)}
                         onKeyDown={(e) => e.key === "Enter" && handleDelete(folder, e)}
                         title="Delete folder"
-                        className={`p-1 rounded-md transition ${
-                          isActive
-                            ? "hover:bg-red-500/30 text-white/70 hover:text-red-300"
-                            : "hover:bg-red-500/20 text-white/40 hover:text-red-400"
-                        }`}
+                        className={`p-1 rounded-md transition ${isActive
+                          ? "hover:bg-red-500/30 text-white/70 hover:text-red-300"
+                          : "hover:bg-red-500/20 text-white/40 hover:text-red-400"
+                          }`}
                       >
                         <Trash2 className="w-3 h-3" />
                       </span>
@@ -233,9 +230,8 @@ export default function FolderPicker({
                   )}
 
                   <span
-                    className={`text-xs font-semibold tabular-nums shrink-0 ${
-                      isActive ? "text-white/80" : "text-white/30"
-                    }`}
+                    className={`text-xs font-semibold tabular-nums shrink-0 ${isActive ? "text-white/80" : "text-white/30"
+                      }`}
                   >
                     {Number(folderCounts?.[folder] || 0)}
                   </span>
@@ -249,14 +245,14 @@ export default function FolderPicker({
           );
         })}
       </div>
-
       {/* Info box */}
-      <div className="pt-3">
-        <p className="text-xs text-white/30 leading-relaxed">
+      <div className="mt-8 p-4 bg-[#3F82FF]/5 border border-[#3F82FF]/20 rounded-xl flex gap-3">
+        <p className="text-xs text-white/80 leading-relaxed">
           Organize your images into folders for better management. The slideshow
           can play from a specific folder or all images.
         </p>
       </div>
+
     </div>
   );
 }

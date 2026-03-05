@@ -1,25 +1,33 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { loadImages, loadSettings } from "@/utils/storage";
+import {
+  DEFAULT_FOLDER,
+  loadActiveFolder,
+  loadImages,
+  loadSettings,
+} from "@/utils/storage";
 import SlideshowPlayer from "@/components/SlideshowPlayer";
 import { Maximize2 } from "lucide-react";
 
 export default function DisplayPage() {
   const [images, setImages] = useState([]);
   const [settings, setSettings] = useState(null);
-  const [mounted, setMounted] = useState(false);
   const [controlsVisible, setControlsVisible] = useState(true);
   const hideTimerRef = useRef(null);
+  const activeFolderRef = useRef(DEFAULT_FOLDER);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const refreshData = useCallback(async () => {
-    setImages(await loadImages());
+  const refreshData = useCallback(async (folderOverride) => {
+    const folder = folderOverride || (await loadActiveFolder());
+    activeFolderRef.current = folder;
+    setImages(await loadImages(folder));
     setSettings(loadSettings());
   }, []);
 
   useEffect(() => {
-    refreshData();
-    setMounted(true);
+    queueMicrotask(() => {
+      refreshData();
+    });
 
     window.addEventListener("focus", refreshData);
     return () => window.removeEventListener("focus", refreshData);
@@ -27,18 +35,30 @@ export default function DisplayPage() {
 
   useEffect(() => {
     const onStorage = (e) => {
-      if (e.key === "mvp_slideshow_images_updated_at") {
+      if (
+        e.key === "mvp_slideshow_images_updated_at" ||
+        e.key === "mvp_slideshow_active_folder_updated_at"
+      ) {
         refreshData();
       }
     };
 
     let channel = null;
     const onChannelMessage = (event) => {
+      if (event?.data?.type === "active-folder-updated") {
+        const nextFolder = event?.data?.folder;
+        refreshData(nextFolder);
+        return;
+      }
       if (event?.data?.type === "images-updated") {
+        const folder = event?.data?.folder || DEFAULT_FOLDER;
+        if (folder !== activeFolderRef.current) {
+          return;
+        }
         if (Array.isArray(event.data.images)) {
           setImages(event.data.images);
         } else {
-          refreshData();
+          refreshData(folder);
         }
       }
     };
@@ -99,7 +119,7 @@ export default function DisplayPage() {
     };
   }, []);
 
-  if (!mounted || !settings) return null;
+  if (!settings) return null;
 
   return (
     <div className="fixed inset-0 bg-black z-50">

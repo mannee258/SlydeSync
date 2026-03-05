@@ -22,16 +22,6 @@ export default function SlideshowPlayer({ images, settings }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    // Keep current slide position when queue changes (uploads/deletes).
-    // Only clamp when the index falls outside the new playlist bounds.
-    setIndex((prev) => {
-      if (!playlist.length) return 0;
-      if (prev >= playlist.length) return playlist.length - 1;
-      return prev;
-    });
-  }, [playlist.length]);
-
-  useEffect(() => {
     if (!playlist.length) return;
     const t = setInterval(
       () => {
@@ -53,7 +43,8 @@ export default function SlideshowPlayer({ images, settings }) {
     return () => document.removeEventListener("fullscreenchange", syncFullscreen);
   }, []);
 
-  const current = playlist[index];
+  const safeIndex = playlist.length ? Math.min(index, playlist.length - 1) : 0;
+  const current = playlist[safeIndex];
 
   if (!playlist.length) {
     return (
@@ -94,7 +85,7 @@ export default function SlideshowPlayer({ images, settings }) {
             </h4>
             <div className="flex items-center gap-3 mt-1">
               <span className="text-xs text-white/40 uppercase tracking-widest font-bold">
-                Slide {index + 1} of {playlist.length}
+                Slide {safeIndex + 1} of {playlist.length}
               </span>
               <div className="w-1 h-1 rounded-full bg-white/20" />
               <span className="text-xs text-white/40">

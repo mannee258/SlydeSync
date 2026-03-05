@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import { Upload, AlertCircle } from "lucide-react";
 import { uploadImages } from "@/utils/storage";
 
-export default function UploadBox({ onAddImages }) {
+export default function UploadBox({ folder, onAddImages }) {
   const inputRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -15,7 +15,7 @@ export default function UploadBox({ onAddImages }) {
     if (!files.length) return;
     setBusy(true);
     try {
-      const uploaded = await uploadImages(files);
+      const uploaded = await uploadImages(files, folder);
       onAddImages(uploaded);
       if (inputRef.current) inputRef.current.value = "";
     } catch (err) {

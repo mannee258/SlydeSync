@@ -2,8 +2,15 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import {
+  DEFAULT_FOLDER,
+  createFolder,
+  renameFolder,
+  deleteFolder,
+  loadActiveFolder,
+  loadFolders,
   loadImages,
   saveImages,
+  saveActiveFolder,
   loadSettings,
   saveSettings,
   defaultSettings,
@@ -11,10 +18,14 @@ import {
 import UploadBox from "@/components/UploadBox";
 import ImageList from "@/components/ImageList";
 import SettingsPanel from "@/components/SettingsPanel";
+import FolderPicker from "@/components/FolderPicker";
 import { RefreshCw, LayoutGrid, Info } from "lucide-react";
 
 export default function AdminPage() {
   const [images, setImages] = useState([]);
+  const [folders, setFolders] = useState([DEFAULT_FOLDER]);
+  const [folderCounts, setFolderCounts] = useState({ [DEFAULT_FOLDER]: 0 });
+  const [selectedFolder, setSelectedFolder] = useState(DEFAULT_FOLDER);
   const [settings, setSettings] = useState(defaultSettings);
   const [mounted, setMounted] = useState(false);
   const [ready, setReady] = useState(false);
@@ -23,9 +34,25 @@ export default function AdminPage() {
     let cancelled = false;
 
     async function init() {
-      const loadedImages = await loadImages();
+      const [{ folders: loadedFolders, folderCounts: loadedCounts }, activeFolder] = await Promise.all([
+        loadFolders(),
+        loadActiveFolder(),
+      ]);
+      const folderToUse = activeFolder || DEFAULT_FOLDER;
+      const loadedImages = await loadImages(folderToUse);
       const loadedSettings = loadSettings();
       if (cancelled) return;
+      setFolders(
+        loadedFolders.includes(folderToUse)
+          ? loadedFolders
+          : [...loadedFolders, folderToUse],
+      );
+      setFolderCounts({
+        ...loadedCounts,
+        [folderToUse]:
+          loadedCounts[folderToUse] ?? loadedImages.length,
+      });
+      setSelectedFolder(folderToUse);
       setImages(loadedImages);
       setSettings(loadedSettings);
       setMounted(true);
@@ -40,9 +67,9 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (mounted && ready) {
-      saveImages(images);
+      saveImages(images, selectedFolder);
     }
-  }, [images, mounted, ready]);
+  }, [images, mounted, ready, selectedFolder]);
 
   useEffect(() => {
     if (mounted && ready) saveSettings(settings);
@@ -58,6 +85,57 @@ export default function AdminPage() {
       approxSizeMb: Math.round((bytes / 1024 / 1024) * 100) / 100,
     };
   }, [images]);
+
+  async function handleSelectFolder(nextFolder) {
+    if (nextFolder === selectedFolder) return;
+    setReady(false);
+    setSelectedFolder(nextFolder);
+    try {
+      await saveActiveFolder(nextFolder);
+      const nextImages = await loadImages(nextFolder);
+      setImages(nextImages);
+      setFolderCounts((prev) => ({ ...prev, [nextFolder]: nextImages.length }));
+    } finally {
+      setReady(true);
+    }
+  }
+
+  async function handleCreateFolder(name) {
+    const created = await createFolder(name);
+    setFolders((prev) =>
+      prev.includes(created) ? prev : [...prev, created],
+    );
+    setFolderCounts((prev) => ({ ...prev, [created]: prev[created] ?? 0 }));
+    await handleSelectFolder(created);
+  }
+
+  async function handleRenameFolder(oldName, newName) {
+    const renamed = await renameFolder(oldName, newName);
+    setFolders((prev) => prev.map((f) => (f === oldName ? renamed : f)));
+    setFolderCounts((prev) => {
+      const next = { ...prev, [renamed]: prev[oldName] ?? 0 };
+      delete next[oldName];
+      return next;
+    });
+    if (selectedFolder === oldName) {
+      setSelectedFolder(renamed);
+    }
+  }
+
+  async function handleDeleteFolder(name) {
+    await deleteFolder(name);
+    const nextFolders = folders.filter((f) => f !== name);
+    setFolders(nextFolders);
+    setFolderCounts((prev) => {
+      const next = { ...prev };
+      delete next[name];
+      return next;
+    });
+    if (selectedFolder === name) {
+      const fallback = nextFolders[0] ?? DEFAULT_FOLDER;
+      await handleSelectFolder(fallback);
+    }
+  }
 
   if (!mounted) return null;
 
@@ -90,18 +168,42 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Main two-column grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-        {/* Left: Media Library */}
+      {/* Main three-column grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_320px] gap-6 items-start">
+        {/* Left: Folders sidebar */}
+          <FolderPicker
+            folders={folders}
+            folderCounts={folderCounts}
+            selectedFolder={selectedFolder}
+            onSelectFolder={handleSelectFolder}
+            onCreateFolder={handleCreateFolder}
+            onRenameFolder={handleRenameFolder}
+            onDeleteFolder={handleDeleteFolder}
+          />
+
+        {/* Centre: Media Library */}
         <section className="bg-[#0C1016] border border-[#1C222B] rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-6 text-white/80">
-            <LayoutGrid className="w-5 h-5 text-[#3F82FF]" />
-            <h2 className="font-semibold">Media Library</h2>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2 text-white/80">
+              <LayoutGrid className="w-5 h-5 text-[#3F82FF]" />
+              <h2 className="font-semibold">Media Library</h2>
+            </div>
+            <span className="text-xs font-medium bg-[#1B1F27] border border-[#242A34] text-white/60 px-3 py-1 rounded-full">
+              Viewing: {selectedFolder === "default" ? "All Images" : selectedFolder}
+            </span>
           </div>
 
           <UploadBox
+            folder={selectedFolder}
             onAddImages={(newOnes) =>
-              setImages((prev) => [...prev, ...newOnes])
+              setImages((prev) => {
+                const next = [...prev, ...newOnes];
+                setFolderCounts((counts) => ({
+                  ...counts,
+                  [selectedFolder]: next.length,
+                }));
+                return next;
+              })
             }
           />
 
@@ -109,7 +211,14 @@ export default function AdminPage() {
             <ImageList
               images={images}
               onDelete={(id) =>
-                setImages((prev) => prev.filter((x) => x.id !== id))
+                setImages((prev) => {
+                  const next = prev.filter((x) => x.id !== id);
+                  setFolderCounts((counts) => ({
+                    ...counts,
+                    [selectedFolder]: next.length,
+                  }));
+                  return next;
+                })
               }
               onMove={(id, dir) => {
                 setImages((prev) => {
@@ -127,6 +236,10 @@ export default function AdminPage() {
               onClearAll={() => {
                 if (confirm("Clear all images from the queue?")) {
                   setImages([]);
+                  setFolderCounts((counts) => ({
+                    ...counts,
+                    [selectedFolder]: 0,
+                  }));
                 }
               }}
             />
@@ -134,6 +247,7 @@ export default function AdminPage() {
         </section>
 
         {/* Right: Playback Config */}
+
         <section className="bg-[#0C1016] border border-[#1C222B] rounded-2xl p-6 sticky top-24 self-start">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2 text-white/80">

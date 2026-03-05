@@ -86,39 +86,7 @@ SlydeSync is intentionally simple:
 
 ---
 
-## Screenshots
 
-Add screenshots to make the README pop.
-
-### Recommended screenshot files
-
-Create these files in your repo:
-
-
-docs/screenshots/admin.png
-docs/screenshots/display.png
-
-
-Then the images below will render automatically:
-
-![Admin Panel](docs/screenshots/admin.png)
-![Display Mode](docs/screenshots/display.png)
-
-### How to capture screenshots from the hosted site
-
-1. Open:
-   - https://slyde-sync.vercel.app/admin
-   - https://slyde-sync.vercel.app/display
-2. Use your browser screenshot tooling:
-   - **Mac**: `Shift + Cmd + 4` (or `Shift + Cmd + 5` for window/full-page tools)
-   - **Windows**: Snipping Tool / `Win + Shift + S`
-   - **Chrome**: DevTools → Command Menu → “Screenshot” / “Capture full size screenshot”
-3. Save them as:
-   - `admin.png`
-   - `display.png`
-4. Put them into `docs/screenshots/` and commit.
-
----
 
 ## Project structure
 

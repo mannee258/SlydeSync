@@ -212,8 +212,6 @@ Settings are stored in browser localStorage
 
 Settings are device/browser-specific (Admin and Display need to be on the same browser profile to share settings).
 
-Roadmap (suggested)
-
 Add authentication for /admin (password, magic link, etc.)
 
 Replace filesystem storage with:

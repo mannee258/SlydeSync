@@ -22,7 +22,13 @@ export default function SlideshowPlayer({ images, settings }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    setIndex(0);
+    // Keep current slide position when queue changes (uploads/deletes).
+    // Only clamp when the index falls outside the new playlist bounds.
+    setIndex((prev) => {
+      if (!playlist.length) return 0;
+      if (prev >= playlist.length) return playlist.length - 1;
+      return prev;
+    });
   }, [playlist.length]);
 
   useEffect(() => {

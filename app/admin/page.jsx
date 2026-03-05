@@ -101,7 +101,7 @@ export default function AdminPage() {
 
           <UploadBox
             onAddImages={(newOnes) =>
-              setImages((prev) => [...newOnes, ...prev])
+              setImages((prev) => [...prev, ...newOnes])
             }
           />
 

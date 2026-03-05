@@ -35,7 +35,11 @@ export default function DisplayPage() {
     let channel = null;
     const onChannelMessage = (event) => {
       if (event?.data?.type === "images-updated") {
-        refreshData();
+        if (Array.isArray(event.data.images)) {
+          setImages(event.data.images);
+        } else {
+          refreshData();
+        }
       }
     };
 

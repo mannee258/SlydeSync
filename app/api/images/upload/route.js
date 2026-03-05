@@ -76,7 +76,7 @@ export async function POST(request) {
     });
   }
 
-  const next = [...uploaded, ...existing];
+  const next = [...existing, ...uploaded];
   await writeManifest(next);
 
   return Response.json({ images: uploaded, totalBytes: totalBytes });

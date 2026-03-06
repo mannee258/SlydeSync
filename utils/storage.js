@@ -70,6 +70,7 @@ export async function saveImages(images, folder = DEFAULT_FOLDER) {
 }
 
 export async function uploadImages(files, folder = DEFAULT_FOLDER) {
+  const safeFolder = typeof folder === "string" && folder ? folder : DEFAULT_FOLDER;
   const list = Array.from(files || []).filter((f) => f?.type?.startsWith("image/"));
   const totalBytes = list.reduce((sum, file) => sum + file.size, 0);
   if (totalBytes > UPLOAD_LIMIT_BYTES) {
@@ -78,7 +79,7 @@ export async function uploadImages(files, folder = DEFAULT_FOLDER) {
 
   const formData = new FormData();
   list.forEach((file) => formData.append("files", file));
-  formData.append("folder", folder);
+  formData.append("folder", safeFolder);
 
   const res = await fetch("/api/images/upload", {
     method: "POST",

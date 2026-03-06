@@ -9,11 +9,10 @@ export default function UploadBox({ folder, onAddImages }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  async function handleChange(e) {
-    setError("");
-    const files = Array.from(e.target.files || []);
+  async function processFiles(files) {
     if (!files.length) return;
     setBusy(true);
+    setError("");
     try {
       const uploaded = await uploadImages(files, folder);
       onAddImages(uploaded);
@@ -25,10 +24,27 @@ export default function UploadBox({ folder, onAddImages }) {
     }
   }
 
+  function handleChange(e) {
+    processFiles(Array.from(e.target.files || []));
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (busy) return;
+    processFiles(Array.from(e.dataTransfer?.files || []));
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+  }
+
   return (
     <div className="grid gap-4">
       <div
         onClick={() => !busy && inputRef.current?.click()}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
         className={`border-2 border-dashed border-[#242A34] rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition hover:border-[#3F82FF] hover:bg-white/5 ${busy ? "opacity-50 cursor-not-allowed" : ""
           }`}
       >

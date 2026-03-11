@@ -146,7 +146,7 @@ export default function AdminPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Admin Control</h1>
           <p className="text-white/40 text-sm mt-1">
-            Manage your slideshow queue and playback settings
+            Manage your slideshow media queue and playback settings
           </p>
         </div>
         <div className="flex items-center gap-0 bg-[#1B1F27] border border-[#242A34] rounded-xl overflow-hidden self-start sm:self-auto">
@@ -161,7 +161,7 @@ export default function AdminPage() {
           <div className="w-px h-full self-stretch bg-white/10" />
           <div className="flex flex-col items-end px-4 py-2.5">
             <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest">
-              Images
+              Media
             </span>
             <span className="text-sm font-semibold mt-0.5">{stats.count} items</span>
           </div>
@@ -189,7 +189,7 @@ export default function AdminPage() {
               <h2 className="font-semibold">Media Library</h2>
             </div>
             <span className="text-xs font-medium bg-[#1B1F27] border border-[#242A34] text-white/60 px-3 py-1 rounded-full">
-              Viewing: {selectedFolder === "default" ? "All Images" : selectedFolder}
+              Viewing: {selectedFolder === "default" ? "All Media" : selectedFolder}
             </span>
           </div>
 

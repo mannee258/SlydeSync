@@ -1,14 +1,21 @@
 "use client";
 
 import React from "react";
-import { Trash2, ArrowUp, ArrowDown, Image as ImageIcon } from "lucide-react";
+import {
+  Trash2,
+  ArrowUp,
+  ArrowDown,
+  Image as ImageIcon,
+  Film,
+} from "lucide-react";
+import { isVideoMedia } from "@/utils/media";
 
 export default function ImageList({ images, onDelete, onMove, onClearAll }) {
   if (!images.length) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-white/40 gap-3 border border-[#1C222B] rounded-xl bg-[#0C1016]">
         <ImageIcon className="w-8 h-8 opacity-20" />
-        <p className="text-sm">No images in your queue yet</p>
+        <p className="text-sm">No media in your queue yet</p>
       </div>
     );
   }
@@ -33,19 +40,34 @@ export default function ImageList({ images, onDelete, onMove, onClearAll }) {
             key={img.id}
             className="flex items-center gap-4 p-3 bg-[#1B1F27] border border-[#242A34] rounded-xl group transition hover:border-[#3F82FF]/50"
           >
-            <div className="relative w-20 h-12 flex-shrink-0">
-              <img
-                src={img.url}
-                alt={img.name}
-                className="w-full h-full object-cover rounded-lg shadow-sm"
-              />
+            <div className="relative w-20 h-12 shrink-0">
+              {isVideoMedia(img) ? (
+                <video
+                  src={img.url}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover rounded-lg shadow-sm bg-black"
+                />
+              ) : (
+                <img
+                  src={img.url}
+                  alt={img.name}
+                  className="w-full h-full object-cover rounded-lg shadow-sm"
+                />
+              )}
               <div className="absolute -top-2 -left-2 w-5 h-5 bg-[#3F82FF] rounded-full flex items-center justify-center text-[10px] font-bold">
                 {idx + 1}
               </div>
+              {isVideoMedia(img) && (
+                <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/70 text-white/80">
+                  <Film className="w-3 h-3" />
+                </div>
+              )}
             </div>
 
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <p className="text-sm font-medium text-white break-words line-clamp-2">
                 {img.name}
               </p>
               <p className="text-[10px] text-white/30 mt-0.5 uppercase tracking-wider font-semibold">

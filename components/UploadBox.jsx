@@ -53,16 +53,16 @@ export default function UploadBox({ folder, onAddImages }) {
         </div>
         <div className="text-center">
           <p className="text-sm font-medium text-white">
-            Click to upload images
+            Click to upload media
           </p>
           <p className="text-xs text-white/40">
-            PNG, JPG or WEBP (Max 50MB total per upload)
+            Images and videos up to 50MB total per upload
           </p>
         </div>
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           multiple
           className="hidden"
           onChange={handleChange}

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { isVideoMedia } from "@/utils/media";
 
 function shuffledCopy(arr) {
   const copy = [...arr];
@@ -20,18 +21,32 @@ export default function SlideshowPlayer({ images, settings }) {
   const [index, setIndex] = useState(0);
   const [fadeKey, setFadeKey] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [videoDurationMs, setVideoDurationMs] = useState(null);
+
+  const intervalMs = Math.max(500, settings.intervalMs || 3000);
+  const safeIndex = playlist.length ? Math.min(index, playlist.length - 1) : 0;
+  const current = playlist[safeIndex];
+  const currentIsVideo = isVideoMedia(current);
+  const displayDurationMs = currentIsVideo
+    ? Math.max(500, videoDurationMs || intervalMs)
+    : intervalMs;
+
+  const advanceSlide = useCallback(() => {
+    if (!playlist.length) return;
+    setIndex((prev) => (prev + 1) % playlist.length);
+    setFadeKey((k) => k + 1);
+    setVideoDurationMs(null);
+  }, [playlist.length]);
 
   useEffect(() => {
-    if (!playlist.length) return;
-    const t = setInterval(
-      () => {
-        setIndex((prev) => (prev + 1) % playlist.length);
-        setFadeKey((k) => k + 1);
-      },
-      Math.max(500, settings.intervalMs || 3000),
-    );
-    return () => clearInterval(t);
-  }, [playlist.length, settings.intervalMs]);
+    if (!playlist.length || currentIsVideo) return;
+    const t = setTimeout(advanceSlide, intervalMs);
+    return () => clearTimeout(t);
+  }, [advanceSlide, currentIsVideo, intervalMs, playlist.length, safeIndex]);
+
+  useEffect(() => {
+    setVideoDurationMs(null);
+  }, [current?.url]);
 
   useEffect(() => {
     const syncFullscreen = () => {
@@ -43,20 +58,17 @@ export default function SlideshowPlayer({ images, settings }) {
     return () => document.removeEventListener("fullscreenchange", syncFullscreen);
   }, []);
 
-  const safeIndex = playlist.length ? Math.min(index, playlist.length - 1) : 0;
-  const current = playlist[safeIndex];
-
   if (!playlist.length) {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center gap-4 text-white/40">
         <div className="w-16 h-16 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center">
-          <span className="text-2xl">📸</span>
+          <span className="text-2xl">🎞️</span>
         </div>
         <div className="text-center">
           <p className="text-lg font-medium text-white/60">
-            No images to display
+            No media to display
           </p>
-          <p className="text-sm">Upload some photos in the Admin panel</p>
+          <p className="text-sm">Upload some photos or videos in the Admin panel</p>
         </div>
       </div>
     );
@@ -66,16 +78,40 @@ export default function SlideshowPlayer({ images, settings }) {
 
   return (
     <div className="h-full w-full bg-black relative overflow-hidden flex items-center justify-center">
-      <img
-        key={useFade ? fadeKey : "static"}
-        src={current.url}
-        alt={current.name}
-        className="w-full h-full block"
-        style={{
-          objectFit: settings.fitMode || "contain",
-          animation: useFade ? "slideshowFadeIn 0.8s ease-in-out" : "none",
-        }}
-      />
+      {currentIsVideo ? (
+        <video
+          key={useFade ? `video-${fadeKey}` : current.url}
+          src={current.url}
+          muted
+          autoPlay
+          playsInline
+          preload="metadata"
+          onLoadedMetadata={(event) => {
+            const durationSeconds = event.currentTarget.duration;
+            if (Number.isFinite(durationSeconds) && durationSeconds > 0) {
+              setVideoDurationMs(Math.round(durationSeconds * 1000));
+            }
+          }}
+          onEnded={advanceSlide}
+          onError={advanceSlide}
+          className="w-full h-full block"
+          style={{
+            objectFit: settings.fitMode || "contain",
+            animation: useFade ? "slideshowFadeIn 0.8s ease-in-out" : "none",
+          }}
+        />
+      ) : (
+        <img
+          key={useFade ? `image-${fadeKey}` : current.url}
+          src={current.url}
+          alt={current.name}
+          className="w-full h-full block"
+          style={{
+            objectFit: settings.fitMode || "contain",
+            animation: useFade ? "slideshowFadeIn 0.8s ease-in-out" : "none",
+          }}
+        />
+      )}
 
       {settings.showCaptions && (
         <div className="absolute bottom-10 left-10 max-w-[80%]">
@@ -89,7 +125,9 @@ export default function SlideshowPlayer({ images, settings }) {
               </span>
               <div className="w-1 h-1 rounded-full bg-white/20" />
               <span className="text-xs text-white/40">
-                {settings.intervalMs / 1000}s auto-advance
+                {currentIsVideo
+                  ? `${Math.round(displayDurationMs / 100) / 10}s video`
+                  : `${intervalMs / 1000}s auto-advance`}
               </span>
             </div>
           </div>
@@ -99,10 +137,10 @@ export default function SlideshowPlayer({ images, settings }) {
       {!isFullscreen && (
         <div className="absolute top-0 left-0 w-full h-1 bg-white/5">
           <div
-            key={fadeKey}
+            key={`${fadeKey}-${displayDurationMs}`}
             className="h-full bg-[#3F82FF] shadow-[0_0_10px_#3F82FF]"
             style={{
-              animation: `slideshowProgress ${settings.intervalMs}ms linear forwards`,
+              animation: `slideshowProgress ${displayDurationMs}ms linear forwards`,
             }}
           />
         </div>

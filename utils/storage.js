@@ -71,7 +71,9 @@ export async function saveImages(images, folder = DEFAULT_FOLDER) {
 
 export async function uploadImages(files, folder = DEFAULT_FOLDER) {
   const safeFolder = typeof folder === "string" && folder ? folder : DEFAULT_FOLDER;
-  const list = Array.from(files || []).filter((f) => f?.type?.startsWith("image/"));
+  const list = Array.from(files || []).filter(
+    (f) => f?.type?.startsWith("image/") || f?.type?.startsWith("video/"),
+  );
   const totalBytes = list.reduce((sum, file) => sum + file.size, 0);
   if (totalBytes > UPLOAD_LIMIT_BYTES) {
     throw new Error("Upload limit exceeded. Max total upload is 50MB.");

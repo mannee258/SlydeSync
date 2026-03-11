@@ -69,6 +69,12 @@ function safeBasename(name) {
     .slice(0, 120);
 }
 
+function getMediaType(file) {
+  if (file?.type?.startsWith("image/")) return "image";
+  if (file?.type?.startsWith("video/")) return "video";
+  return null;
+}
+
 export async function POST(request) {
   const formData = await request.formData();
   const folder = sanitizeFolderName(formData.get("folder"));
@@ -94,7 +100,8 @@ export async function POST(request) {
   const uploaded = [];
 
   for (const file of files) {
-    if (!file.type.startsWith("image/")) continue;
+    const mediaType = getMediaType(file);
+    if (!mediaType) continue;
 
     const ext = path.extname(file.name) || ".bin";
     const base = path.basename(file.name, ext);
@@ -113,6 +120,8 @@ export async function POST(request) {
       url: `/uploads/${folder}/${filename}`,
       createdAt: now,
       size: file.size,
+      mediaType,
+      mimeType: file.type,
     });
   }
 

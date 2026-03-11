@@ -155,7 +155,7 @@ export default function AdminPage() {
               Storage
             </span>
             <span className="text-sm font-semibold mt-0.5">
-              {stats.approxSizeMb} MB / 50 MB
+              {stats.approxSizeMb} MB / 150 MB
             </span>
           </div>
           <div className="w-px h-full self-stretch bg-white/10" />
@@ -171,15 +171,15 @@ export default function AdminPage() {
       {/* Main three-column grid */}
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr_320px] gap-6 items-start">
         {/* Left: Folders sidebar */}
-          <FolderPicker
-            folders={folders}
-            folderCounts={folderCounts}
-            selectedFolder={selectedFolder}
-            onSelectFolder={handleSelectFolder}
-            onCreateFolder={handleCreateFolder}
-            onRenameFolder={handleRenameFolder}
-            onDeleteFolder={handleDeleteFolder}
-          />
+        <FolderPicker
+          folders={folders}
+          folderCounts={folderCounts}
+          selectedFolder={selectedFolder}
+          onSelectFolder={handleSelectFolder}
+          onCreateFolder={handleCreateFolder}
+          onRenameFolder={handleRenameFolder}
+          onDeleteFolder={handleDeleteFolder}
+        />
 
         {/* Centre: Media Library */}
         <section className="bg-[#0C1016] border border-[#1C222B] rounded-2xl p-6 shadow-sm">

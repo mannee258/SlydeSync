@@ -56,7 +56,7 @@ export default function UploadBox({ folder, onAddImages }) {
             Click to upload media
           </p>
           <p className="text-xs text-white/40">
-            Images and videos up to 50MB total per upload
+            Images and videos up to 150MB total per upload
           </p>
         </div>
         <input

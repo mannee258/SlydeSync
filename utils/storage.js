@@ -4,7 +4,7 @@ const IMAGES_UPDATED_KEY = "mvp_slideshow_images_updated_at";
 const ACTIVE_FOLDER_UPDATED_KEY = "mvp_slideshow_active_folder_updated_at";
 const UPDATES_CHANNEL = "slydesync_updates";
 export const DEFAULT_FOLDER = "default";
-export const UPLOAD_LIMIT_BYTES = 50 * 1024 * 1024;
+export const UPLOAD_LIMIT_BYTES = 150 * 1024 * 1024;
 
 function notifyImagesUpdated(images, folder) {
   const at = Date.now();

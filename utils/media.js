@@ -3,6 +3,8 @@ const IMAGE_EXTENSIONS = new Set([
   ".avif",
   ".gif",
   ".jpeg",
+  ".heic",
+  ".heif",
   ".jpg",
   ".png",
   ".svg",
